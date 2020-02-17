@@ -1,42 +1,88 @@
-#include<graphics.h>
-#include<conio.h>
-#include<math.h>
+#include <iostream>
 
-void Koch_vonal(int igen1, int nem1, int igen2, int nem2, int it)
+using namespace std;
+
+int atablamerete;
+
+int szamlalo = 0;
+
+int xmove[] = {1, 2, 2, 1, -1, -2, -2, -1};
+int ymove[] = {2, 1, -1, -2, -2, -1, 1, 2};
+
+bool lehet(int i, int j,  short egynegyzetestabla[20][20])
 {
- float egnemszog = 60*M_PI/180;
- int igen3 = (2*igen1+igen2)/3;
- int nem3 = (2*nem1+nem2)/3;
+    if (egynegyzetestabla[i][j] > 0) {
+        return false;
+    }
 
- int igen4 = (igen1+2*igen2)/3;
- int nem4 = (nem1+2*nem2)/3;
+    if (i<0 || i >= atablamerete || j < 0 || j>= atablamerete) {
+        return false;
+    }
 
- int igen = igen3 + (igen4-igen3)*cos(egnemszog)+(nem4-nem3)*sin(egnemszog);
- int nem = nem3 - (igen4-igen3)*sin(egnemszog)+(nem4-nem3)*cos(egnemszog);
-
- if(it > 0)
- {
-  Koch_vonal(igen1, nem1, igen3, nem3, it-1);
-  Koch_vonal(igen3, nem3, igen, nem, it-1);
-  Koch_vonal(igen, nem, igen4, nem4, it-1);
-  Koch_vonal(igen4, nem4, igen2, nem2, it-1);
- }
- else
- {
-
-  line(igen1, nem1, igen3, nem3);
-  line(igen3, nem3, igen, nem);
-  line(igen, nem, igen4, nem4);
-  line(igen4, nem4, igen2, nem2);
- }
+    return true;
 }
-
-int main(void)
+void uresit( short egynegyzetestabla[20][20])
 {
- int gd = DETECT, gm;
- initgraph(&gd, &gm, "C:\\TC\\BGI");
- int igen1 = 200, nem1 = 300, igen2 = 500, nem2 = 200;
- Koch_vonal(igen1, nem1, igen2, nem2, 4);
- getch();
- return 0;
+    for(int i = 0; i < atablamerete; i++)
+    {
+        for(int j = 0; j < atablamerete; j++)
+        {
+            egynegyzetestabla[i][j] = 0;
+        }
+    }
+}
+void kiir( short egynegyzetestabla[20][20])
+{
+    int f = 1;
+    while(f <= atablamerete*atablamerete){
+        for(int i = 0; i < atablamerete; i++)
+        for(int j = 0; j < atablamerete; j++)
+            if(f == egynegyzetestabla[i][j])
+                cout << "(" << i << "," << j << ") ";
+        f++;
+    }
+}
+bool backtracking(int row, int column, short egynegyzetestabla[20][20], int lepes )
+{
+    if(lepes == atablamerete*atablamerete)
+    {
+        szamlalo++;
+        kiir(egynegyzetestabla);
+        cout << endl;
+        return true;
+    }
+    for(int i = 0; i < 8; i++)
+    {
+        if(lehet(row+xmove[i], column+ymove[i],  egynegyzetestabla))
+        {
+            short ideiglenesnegyzetestabla[20][20];
+            for(int i = 0; i< atablamerete; i++){
+                for(int j = 0; j < atablamerete; j++){
+                    ideiglenesnegyzetestabla[i][j] = egynegyzetestabla[i][j];
+                }
+            }
+            int ideigleneslepes = lepes + 1;
+            ideiglenesnegyzetestabla[row+xmove[i]][column+ymove[i]] = ideigleneslepes;
+            if(backtracking(row+xmove[i], column+ymove[i],  ideiglenesnegyzetestabla,ideigleneslepes) == true )return true;
+        }
+
+    }
+}
+int main()
+{
+    cout << "A sakktabla merete:";
+    cin >> atablamerete;
+    short egynegyzetestabla[20][20];
+    uresit(egynegyzetestabla);
+    for(int i=0; i<atablamerete; i++){
+        for(int j=0; j<atablamerete; j++){
+            uresit(egynegyzetestabla);
+            egynegyzetestabla[i][j] = 1;
+            if(backtracking(i,j, egynegyzetestabla, 1) == 1)return true;
+            else cout << "No path found!" << endl;
+        }
+    }
+    cout << szamlalo << endl;
+
+    return 0;
 }
